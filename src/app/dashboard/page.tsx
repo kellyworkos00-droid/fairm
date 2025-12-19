@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { FloatingNav } from '@/components/floating-nav'
 import { 
-  Sprout, PlusCircle, BarChart3, TrendingUp, Package, MapPin, 
-  Eye, Trash2, Edit2, LogOut, Menu, X, AlertCircle, CheckCircle,
-  DollarSign, ShoppingCart, Users
+  PlusCircle, BarChart3, TrendingUp, Package, MapPin, 
+  AlertCircle, CheckCircle, DollarSign, ShoppingCart,
+  Edit2, Trash2
 } from 'lucide-react'
-import { signOut } from 'next-auth/react'
 
 type Product = {
   id: string
@@ -121,44 +121,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
-              <Sprout className="h-8 w-8 text-green-600" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">FiarmConnect</span>
-            </Link>
-            
-            <nav className="hidden md:flex gap-8">
-              <Link href="/marketplace" className="text-gray-700 hover:text-green-600 font-medium transition">
-                Marketplace
-              </Link>
-              <Link href="/" className="text-gray-700 hover:text-green-600 font-medium transition">
-                Market Data
-              </Link>
-              <Link href="/" className="text-gray-700 hover:text-green-600 font-medium transition">
-                Education
-              </Link>
-            </nav>
-
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
-              >
-                {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <FloatingNav />
 
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}

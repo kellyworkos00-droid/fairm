@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { FloatingNav } from '@/components/floating-nav'
 import { 
   ShoppingCart, Sprout, Search, MapPin, DollarSign, Package, 
-  X, Plus, Minus, Truck, User, LogOut, Menu, ChevronDown, Star,
-  Heart, Filter
+  X, Plus, Minus, Truck, Filter, CheckCircle
 } from 'lucide-react'
-import { signOut } from 'next-auth/react'
 
 type Product = {
   id: string
@@ -133,54 +133,39 @@ export default function MarketplacePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
-              <Sprout className="h-8 w-8 text-green-600" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">FiarmConnect</span>
-            </Link>
-
-            <div className="flex-1 max-w-md mx-8 hidden md:block">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && fetchProducts()}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="hidden sm:block text-gray-700 hover:text-green-600 font-medium transition">
-                Dashboard
-              </Link>
-              <button
-                onClick={() => setCartOpen(!cartOpen)}
-                className="relative p-2 hover:bg-gray-100 rounded-lg transition"
-              >
-                <ShoppingCart className="h-6 w-6 text-green-600" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {itemCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <FloatingNav />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Fresh From Farms</h1>
-          <p className="text-gray-600">Browse products from local Kenyan farmers</p>
+        {/* Page Header with Search and Cart */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Fresh From Farms</h1>
+            <p className="text-gray-600">Browse products from local Kenyan farmers</p>
+          </div>
+          <div className="flex items-center gap-4 md:max-w-md">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && fetchProducts()}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              />
+            </div>
+            <button
+              onClick={() => setCartOpen(!cartOpen)}
+              className="relative p-3 bg-white border border-gray-200 rounded-lg hover:bg-green-50 transition"
+            >
+              <ShoppingCart className="h-6 w-6 text-green-600" />
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {itemCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Success Alert */}

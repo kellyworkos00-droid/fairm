@@ -33,11 +33,12 @@ export async function GET(request: Request) {
         }
       }
 
-      const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
-      const topProducts = Object.entries(productCounts)
-        .sort((a, b) => b[1] - a[1])
+      const topCategory = (Object.entries(categoryCounts) as Array<[string, number]>)
+        .sort((a: [string, number], b: [string, number]) => b[1] - a[1])[0]?.[0]
+      const topProducts = (Object.entries(productCounts) as Array<[string, number]>)
+        .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
         .slice(0, limit)
-        .map(([productId]) => productId)
+        .map(([productId]: [string, number]) => productId)
 
       const recommended = await prisma.product.findMany({
         where: {
@@ -64,7 +65,10 @@ export async function GET(request: Request) {
     })
 
     const products = await prisma.product.findMany({
-      where: { id: { in: popular.map((p) => p.productId) }, available: true },
+      where: {
+        id: { in: popular.map((p: { productId: string }) => p.productId) },
+        available: true,
+      },
     })
 
     return NextResponse.json({ recommended: products })

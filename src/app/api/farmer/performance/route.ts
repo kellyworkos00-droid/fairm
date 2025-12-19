@@ -19,7 +19,10 @@ export async function GET() {
     })
 
     const totalOrders = orders.length
-    const totalRevenue = orders.reduce((acc, o) => acc + (o.totalAmount - o.commission), 0)
+    const totalRevenue = orders.reduce(
+      (acc: number, o: { totalAmount: number; commission: number }) => acc + (o.totalAmount - o.commission),
+      0
+    )
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
     const statusCounts: Record<string, number> = {}

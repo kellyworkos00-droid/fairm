@@ -1,0 +1,313 @@
+// AgriTech Farm-to-Market Marketplace Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User Management
+enum UserRole {
+  FARMER
+  BUYER
+  AGGREGATOR
+  ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+  ENTERPRISE
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  phone         String?
+  password      String
+  role          UserRole @default(FARMER)
+  avatar        String?
+  location      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relationships
+  products      Product[]
+  orders        Order[]
+  buyerOrders   Order[]   @relation("BuyerOrders")
+  subscription  Subscription?
+  aggregations  Aggregation[]
+  education     EducationProgress[]
+  notifications Notification[]
+}
+
+// Subscription & Monetization
+model Subscription {
+  id              String           @id @default(cuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            SubscriptionTier @default(FREE)
+  status          String           @default("active") // active, cancelled, expired
+  currentPeriodEnd DateTime?
+  monthlyPrice    Float            @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  payments        Payment[]
+}
+
+model Payment {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount         Float
+  currency       String       @default("KES")
+  method         String       // mpesa, stripe, cash
+  transactionId  String?
+  status         String       @default("pending") // pending, completed, failed
+  createdAt      DateTime     @default(now())
+}
+
+// Product & Marketplace
+enum ProductCategory {
+  VEGETABLES
+  FRUITS
+  GRAINS
+  LEGUMES
+  DAIRY
+  LIVESTOCK
+  POULTRY
+  OTHER
+}
+
+enum ProductUnit {
+  KG
+  TONNE
+  BAG
+  PIECE
+  LITRE
+  CRATE
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  farmerId    String
+  farmer      User            @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  category    ProductCategory
+  unit        ProductUnit
+  quantity    Float
+  pricePerUnit Float
+  location    String
+  images      String[]        @default([])
+  quality     String?         // Grade A, B, C
+  harvestDate DateTime?
+  available   Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  // Relationships
+  orderItems  OrderItem[]
+  aggregationItems AggregationItem[]
+}
+
+// Order Management
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique @default(cuid())
+  buyerId         String
+  buyer           User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  sellerId        String
+  seller          User        @relation(fields: [sellerId], references: [id])
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  commission      Float       @default(0) // Platform commission (5-10%)
+  deliveryAddress String
+  deliveryDate    DateTime?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // Relationships
+  items           OrderItem[]
+  delivery        Delivery?
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Float
+  pricePerUnit Float
+  subtotal   Float
+}
+
+model Delivery {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  driverName    String?
+  driverPhone   String?
+  vehicleNumber String?
+  status        String   @default("pending") // pending, in_transit, delivered
+  trackingUrl   String?
+  pickupTime    DateTime?
+  deliveryTime  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Aggregation & Bulk Selling
+model Aggregation {
+  id             String      @id @default(cuid())
+  aggregatorId   String
+  aggregator     User        @relation(fields: [aggregatorId], references: [id])
+  name           String
+  targetQuantity Float
+  currentQuantity Float      @default(0)
+  targetPrice    Float
+  buyerName      String?
+  buyerContact   String?
+  status         String      @default("collecting") // collecting, ready, sold
+  deadline       DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  
+  items          AggregationItem[]
+}
+
+model AggregationItem {
+  id             String      @id @default(cuid())
+  aggregationId  String
+  aggregation    Aggregation @relation(fields: [aggregationId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product     @relation(fields: [productId], references: [id])
+  quantity       Float
+  quality        String?
+  addedAt        DateTime    @default(now())
+}
+
+// Market Data & Pricing Intelligence
+model MarketPrice {
+  id        String   @id @default(cuid())
+  product   String
+  market    String   // e.g., "Nairobi - Wakulima Market"
+  region    String   // e.g., "Central Kenya"
+  price     Float
+  unit      String
+  date      DateTime @default(now())
+  source    String?  // data source
+  createdAt DateTime @default(now())
+  
+  @@index([product, market, date])
+}
+
+model WeatherData {
+  id          String   @id @default(cuid())
+  region      String
+  temperature Float
+  humidity    Float
+  rainfall    Float
+  condition   String   // sunny, rainy, cloudy, etc.
+  forecast    String?  // short forecast text
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  @@index([region, date])
+}
+
+// Farmer Education & Advisory
+enum ContentType {
+  ARTICLE
+  VIDEO
+  GUIDE
+  TIP
+}
+
+model EducationContent {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  content     String      @db.Text
+  category    String      // Crop Management, Pest Control, Soil Health, etc.
+  type        ContentType @default(ARTICLE)
+  thumbnail   String?
+  videoUrl    String?
+  isPremium   Boolean     @default(false)
+  views       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  progress    EducationProgress[]
+}
+
+model EducationProgress {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentId String
+  content   EducationContent  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  completed Boolean           @default(false)
+  progress  Int               @default(0) // 0-100
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  
+  @@unique([userId, contentId])
+}
+
+// Notifications & Alerts
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  type      String   // price_alert, order_update, weather_alert, education
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  
+  @@index([userId, isRead])
+}
+
+// Suppliers (Agrovets) & Events
+model Agrovet {
+  id         String   @id @default(cuid())
+  name       String
+  region     String
+  location   String?
+  categories String[] @default([]) // seeds, fertilizer, tools
+  services   String[] @default([]) // soil testing, delivery
+  rating     Float    @default(0)
+  contact    String?
+  website    String?
+  createdAt  DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  region      String
+  category    String   // training, expo, market day
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  link        String?
+  createdAt   DateTime @default(now())
+  
+  @@index([region, startDate])
+}

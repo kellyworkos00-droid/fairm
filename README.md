@@ -1,36 +1,266 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FiarmConnect - AgriTech Farm-to-Market Marketplace
 
-## Getting Started
+A comprehensive digital platform connecting Kenyan farmers directly to buyers, providing market intelligence, bulk aggregation tools, and educational resources to transform agricultural commerce in Kenya.
 
-First, run the development server:
+## 🌱 Overview
 
+**FiarmConnect** solves critical problems in Kenya's agricultural sector:
+- **Farm-to-Market Marketplace**: Direct connection between farmers and buyers (retailers, restaurants, exporters)
+- **Pricing Intelligence**: Real-time commodity prices, weather forecasts, and market analytics
+- **Bulk Aggregation**: Pool produce from multiple farmers to meet large buyer orders
+- **Farmer Education**: Expert guides on crop management, pest control, and best practices
+
+## 💰 Monetization Model
+
+### Subscription Tiers
+
+| Feature | Free | Premium (KES 500/month) | Enterprise (KES 2,500/month) |
+|---------|------|----------|------------|
+| Product Listings | 5 | 50 | Unlimited |
+| Transaction Commission | 10% | 7% | 5% |
+| Market Data | Delayed (24h) | Real-time | Real-time + Analytics |
+| Educational Content | Basic articles | Premium content | Full access + API |
+| Support | Community | Priority | Dedicated manager |
+
+### Revenue Streams
+1. **Transaction Commissions**: 5-10% per sale based on subscription tier
+2. **Monthly Subscriptions**: KES 500 (Premium) or KES 2,500 (Enterprise)
+3. **Bulk Aggregation Margin**: Revenue from margin per kg sold
+
+## 🚀 Tech Stack
+
+- **Framework**: Next.js 14 (App Router) with TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js with JWT
+- **Styling**: Tailwind CSS
+- **Payments**: Stripe + M-Pesa integration
+- **Deployment**: Vercel-ready
+
+## 📦 Installation
+
+### Prerequisites
+- Node.js 18+ 
+- PostgreSQL database
+- npm or yarn
+
+### Setup Steps
+
+1. **Clone and Install**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd fiarm
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Environment Variables**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Update `.env` with your credentials:
+```env
+# Database
+DATABASE_URL="your_postgres_connection_string"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# NextAuth
+NEXTAUTH_SECRET="generate-a-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
 
-## Learn More
+# Payment Gateways
+STRIPE_SECRET_KEY="your_stripe_key"
+MPESA_CONSUMER_KEY="your_mpesa_key"
+MPESA_CONSUMER_SECRET="your_mpesa_secret"
 
-To learn more about Next.js, take a look at the following resources:
+# Optional APIs
+WEATHER_API_KEY="your_weather_api_key"
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Database Setup**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Start Prisma local database:
+```bash
+npx prisma dev
+```
 
-## Deploy on Vercel
+Or use your own PostgreSQL database and migrate:
+```bash
+npx prisma migrate dev --name init
+npx prisma generate
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Seed Sample Data (Optional)**
+```bash
+npx prisma db seed
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Run Development Server**
+```bash
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000)
+
+## 📁 Project Structure
+
+```
+fiarm/
+├── src/
+│   ├── app/
+│   │   ├── api/              # API routes
+│   │   │   ├── auth/         # Authentication endpoints
+│   │   │   ├── products/     # Product management
+│   │   │   ├── orders/       # Order processing
+│   │   │   ├── subscription/ # Subscription management
+│   │   │   ├── market-data/  # Pricing intelligence
+│   │   │   └── education/    # Educational content
+│   │   ├── auth/             # Auth pages (signin/signup)
+│   │   ├── dashboard/        # User dashboards
+│   │   ├── marketplace/      # Product marketplace
+│   │   ├── market-data/      # Market intelligence
+│   │   └── education/        # Learning resources
+│   ├── lib/
+│   │   ├── prisma.ts         # Database client
+│   │   └── auth.ts           # NextAuth configuration
+│   ├── config/
+│   │   └── subscriptions.ts  # Pricing tiers
+│   └── types/                # TypeScript definitions
+├── prisma/
+│   └── schema.prisma         # Database schema
+└── .env                      # Environment variables
+```
+
+## 🗄️ Database Schema
+
+### Core Models
+- **User**: Farmers, Buyers, Aggregators, Admins with role-based access
+- **Subscription**: Tiered pricing (Free, Premium, Enterprise)
+- **Product**: Farm produce listings with pricing and availability
+- **Order**: Transaction management with commission tracking
+- **MarketPrice**: Real-time commodity pricing data
+- **EducationContent**: Crop guides and farming best practices
+- **Aggregation**: Bulk selling coordination
+- **Payment**: Transaction and subscription payments
+
+## 🎯 Key Features
+
+### 1. Farm-to-Market Marketplace
+- Product listings with images and details
+- Search and filter by category, location, price
+- Direct messaging between farmers and buyers
+- Order management and tracking
+
+### 2. Pricing Intelligence
+- Real-time commodity prices across markets
+- Historical price trends and charts
+- Weather forecasts and alerts
+- Demand predictions
+
+### 3. Bulk Aggregation
+- Group farmer produce for large orders
+- Quality grading and certification
+- Logistics coordination
+- Better pricing through volume
+
+### 4. Farmer Education
+- Crop management guides
+- Pest and disease control
+- Soil health and fertilization
+- Modern farming techniques
+- Video tutorials (Premium)
+
+### 5. Subscription Management
+- Flexible tier upgrades/downgrades
+- M-Pesa and Stripe payment integration
+- Automated billing and invoices
+- Usage tracking and limits
+
+## 🔐 Authentication & Roles
+
+- **FARMER**: List products, manage inventory, view orders
+- **BUYER**: Browse marketplace, place orders, track deliveries
+- **AGGREGATOR**: Coordinate bulk purchases, manage quality control
+- **ADMIN**: Platform management, analytics, user support
+
+## 🌍 Deployment
+
+### Vercel (Recommended)
+```bash
+npm run build
+vercel deploy
+```
+
+### Environment Variables
+Ensure all production environment variables are set in your deployment platform.
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Create new account
+- `POST /api/auth/[...nextauth]` - Sign in/out
+
+### Products
+- `GET /api/products` - List products
+- `POST /api/products` - Create product (Farmers only)
+
+### Orders
+- `GET /api/orders` - List user orders
+- `POST /api/orders` - Create new order
+
+### Market Data
+- `GET /api/market-data` - Get commodity prices
+- `POST /api/market-data` - Add price data
+
+### Subscription
+- `GET /api/subscription` - Get current subscription
+- `POST /api/subscription` - Upgrade/downgrade
+
+### Education
+- `GET /api/education` - List educational content
+
+## 🛠️ Development
+
+### Generate Prisma Client
+```bash
+npx prisma generate
+```
+
+### Run Database Migrations
+```bash
+npx prisma migrate dev
+```
+
+### View Database
+```bash
+npx prisma studio
+```
+
+### Type Checking
+```bash
+npm run type-check
+```
+
+### Linting
+```bash
+npm run lint
+```
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Support
+
+For support:
+- Email: support@fiarmconnect.co.ke
+- Phone: +254 700 000 000
+- Visit: [https://fiarmconnect.co.ke](https://fiarmconnect.co.ke)
+
+---
+
+**Built with ❤️ for Kenyan Farmers**
+
+Empowering agriculture through technology. Join us in transforming Kenya's farming sector!

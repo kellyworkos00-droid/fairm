@@ -7,7 +7,7 @@ import { FloatingNav } from '@/components/floating-nav'
 import { 
   PlusCircle, BarChart3, TrendingUp, Package, MapPin, 
   AlertCircle, CheckCircle, DollarSign, ShoppingCart,
-  Edit2, Trash2
+  Edit2, Trash2, ArrowRight, Sparkles, ShoppingBag
 } from 'lucide-react'
 
 type Product = {
@@ -27,13 +27,12 @@ type Product = {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [perf, setPerf] = useState<any>(null)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [showForm, setShowForm] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'add'>('overview')
 
   const [form, setForm] = useState({
@@ -77,10 +76,14 @@ export default function DashboardPage() {
     } catch {}
   }
 
+  const isAuthed = status === 'authenticated' && !!session?.user
+
   useEffect(() => {
-    fetchProducts()
-    fetchPerformance()
-  }, [])
+    if (isAuthed) {
+      fetchProducts()
+      fetchPerformance()
+    }
+  }, [isAuthed])
 
   const createProduct = async () => {
     setError('')
@@ -108,7 +111,6 @@ export default function DashboardPage() {
         location: '',
         quality: 'A',
       })
-      setShowForm(false)
       setActiveTab('products')
       await fetchProducts()
       setTimeout(() => setSuccess(''), 3000)
@@ -119,15 +121,77 @@ export default function DashboardPage() {
     }
   }
 
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-4 border-green-200 border-t-green-600 animate-spin" aria-label="Loading" />
+      </div>
+    )
+  }
+
+  if (!isAuthed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+        <main className="max-w-5xl mx-auto px-4 py-12">
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 p-8 md:p-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm font-semibold mb-4">
+              <Sparkles className="h-4 w-4" />
+              Farmer tools, anywhere
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Sign in to manage your farm</h1>
+            <p className="text-gray-600 text-lg mb-8 max-w-2xl">Access your dashboard, sync orders, and keep your inventory current. Join Kenya's farm-to-market network in seconds.</p>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => router.push('/auth/signin')}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold"
+              >
+                <ArrowRight className="h-4 w-4" />
+                Sign In
+              </button>
+              <button
+                onClick={() => router.push('/auth/signup')}
+                className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 transition font-semibold"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 pb-24 md:pb-12">
       <FloatingNav />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8 md:py-12">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Farmer Dashboard</h1>
-          <p className="text-gray-600">Manage your products and track performance</p>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm font-semibold mb-3">
+              <Sparkles className="h-4 w-4" />
+              Farmer Mode
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Farmer Dashboard</h1>
+            <p className="text-gray-600">Manage your products, track performance, and sell faster.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setActiveTab('add')}
+              className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl shadow-sm hover:bg-green-700 transition font-semibold"
+            >
+              <PlusCircle className="h-5 w-5" />
+              Add Product
+            </button>
+            <button
+              onClick={() => router.push('/marketplace')}
+              className="flex items-center gap-2 px-4 py-3 bg-white text-gray-800 rounded-xl border border-gray-200 hover:border-green-200 hover:text-green-700 transition font-semibold"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              View Marketplace
+            </button>
+          </div>
         </div>
 
         {/* Alerts */}
@@ -146,12 +210,12 @@ export default function DashboardPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-gray-200">
+        <div className="flex gap-2 md:gap-4 mb-8 border-b border-gray-200 overflow-x-auto no-scrollbar pb-1">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`pb-3 px-4 font-medium transition border-b-2 ${
+            className={`pb-3 px-4 rounded-lg font-medium transition border-b-2 ${
               activeTab === 'overview'
-                ? 'border-green-600 text-green-600'
+                ? 'border-green-600 text-green-700 bg-green-50'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -159,9 +223,9 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={`pb-3 px-4 font-medium transition border-b-2 ${
+            className={`pb-3 px-4 rounded-lg font-medium transition border-b-2 ${
               activeTab === 'products'
-                ? 'border-green-600 text-green-600'
+                ? 'border-green-600 text-green-700 bg-green-50'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -169,9 +233,9 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('add')}
-            className={`pb-3 px-4 font-medium transition border-b-2 ${
+            className={`pb-3 px-4 rounded-lg font-medium transition border-b-2 ${
               activeTab === 'add'
-                ? 'border-green-600 text-green-600'
+                ? 'border-green-600 text-green-700 bg-green-50'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -183,7 +247,7 @@ export default function DashboardPage() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* KPI Cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
               <KPICard
                 icon={<Package className="h-6 w-6" />}
                 label="Total Products"
@@ -224,7 +288,7 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   <Metric label="Average Order Value" value={`KES ${(perf?.avgOrderValue ?? 0).toFixed(0)}`} />
                   <Metric label="Top Product" value={perf?.topProducts?.[0]?.name ?? 'No sales yet'} />
-                  <Metric label="Total Quantity Sold" value={perf?.totalQuantitySold ?? 0 + ' units'} />
+                  <Metric label="Total Quantity Sold" value={`${perf?.totalQuantitySold ?? 0} units`} />
                 </div>
               </div>
 
@@ -242,9 +306,9 @@ export default function DashboardPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-8 text-white">
-              <h3 className="text-2xl font-bold mb-4">Quick Tips</h3>
-              <ul className="space-y-2 text-green-50">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-8 text-white shadow-lg">
+              <h3 className="text-2xl font-bold mb-4">Quick Wins</h3>
+              <ul className="space-y-2 text-green-50 text-sm md:text-base">
                 <li>✓ Keep inventory updated for better visibility</li>
                 <li>✓ Use accurate pricing to compete in the marketplace</li>
                 <li>✓ Add product descriptions to attract more buyers</li>
@@ -256,11 +320,11 @@ export default function DashboardPage() {
         {/* Products Tab */}
         {activeTab === 'products' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-2xl font-bold text-gray-900">Your Products ({products.length})</h2>
               <button
                 onClick={() => setActiveTab('add')}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm"
               >
                 <PlusCircle className="h-5 w-5" />
                 Add Product
@@ -280,7 +344,7 @@ export default function DashboardPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -352,7 +416,7 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <button
                   onClick={createProduct}
                   disabled={!canSubmit || loading}
@@ -371,6 +435,24 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Mobile quick actions */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-lg px-4 py-3 flex items-center justify-between gap-3">
+        <button
+          onClick={() => setActiveTab('add')}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl font-semibold shadow-sm"
+        >
+          <PlusCircle className="h-5 w-5" />
+          Add Product
+        </button>
+        <button
+          onClick={() => router.push('/marketplace')}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-800 rounded-xl font-semibold"
+        >
+          <ShoppingBag className="h-5 w-5" />
+          Marketplace
+        </button>
+      </div>
     </div>
   )
 }

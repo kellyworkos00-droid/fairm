@@ -31,6 +31,7 @@ export async function GET() {
     }
 
     const productTotals: Record<string, { name: string; quantity: number; revenue: number }> = {}
+    let totalQuantitySold = 0
     for (const o of orders) {
       for (const item of o.items) {
         if (!productTotals[item.productId]) {
@@ -42,6 +43,7 @@ export async function GET() {
         }
         productTotals[item.productId].quantity += item.quantity
         productTotals[item.productId].revenue += item.subtotal
+        totalQuantitySold += item.quantity
       }
     }
 
@@ -55,6 +57,7 @@ export async function GET() {
       totalRevenue,
       avgOrderValue,
       statusCounts,
+      totalQuantitySold,
       topProducts,
     })
   } catch (error) {
